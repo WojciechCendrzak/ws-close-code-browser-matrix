@@ -1,5 +1,7 @@
 const WebSocket = require("ws");
 require("dotenv").config();
+
+const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 
 console.log("--------------------------------");
@@ -7,8 +9,9 @@ console.log("Server version: 1.1");
 console.log("--------------------------------");
 
 console.log("PORT", PORT);
+console.log("HOST", HOST);
 
-const wss = new WebSocket.Server({ port: PORT });
+const wss = new WebSocket.Server({ host: HOST, port: PORT });
 
 // List of all connected clients
 let clients = [];
@@ -51,7 +54,7 @@ wss.on("connection", (ws) => {
   });
 });
 
-console.log(`WebSocket server is running on ws://localhost:${PORT}`);
+console.log(`WebSocket server is running on ws://${HOST}:${PORT}`);
 
 const getBrowserId = (browserInfo) => {
   const { browserName, browserVersion, osName, osVersion } = browserInfo;
