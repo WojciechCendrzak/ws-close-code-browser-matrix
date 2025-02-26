@@ -3,7 +3,7 @@ require("dotenv").config();
 const PORT = process.env.PORT;
 
 console.log("--------------------------------");
-console.log("Server version: 1.0");
+console.log("Server version: 1.1");
 console.log("--------------------------------");
 
 console.log("PORT", PORT);
@@ -53,17 +53,14 @@ wss.on("connection", (ws) => {
 
 console.log(`WebSocket server is running on ws://localhost:${PORT}`);
 
-const getBrowserId = (browserName, browserVersion, osName, osVersion) => {
+const getBrowserId = (browserInfo) => {
+  const { browserName, browserVersion, osName, osVersion } = browserInfo;
+
   return `${browserName}-${browserVersion}-${osName}-${osVersion}`;
 };
 
 const updateBrowser = (browserInfo, closeCodeOnRefresh, closeCodeOnClose) => {
-  const browserId = getBrowserId(
-    browserInfo.browserName,
-    browserInfo.browserVersion,
-    browserInfo.osName,
-    browserInfo.osVersion
-  );
+  const browserId = getBrowserId(browserInfo);
 
   const existingBrowser = browsers.get(browserId);
 

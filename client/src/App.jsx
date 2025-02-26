@@ -13,9 +13,18 @@ const browserInfo = {
   platform: userAgent.platform.type,
 };
 
+const getBrowserId = (browserInfo) => {
+  const { browserName, browserVersion, osName, osVersion } = browserInfo;
+
+  return `${browserName}-${browserVersion}-${osName}-${osVersion}`;
+};
+
 export const App = () => {
   const [closingTabMode, setClosingTabMode] = useState(false);
   const [allBrowserData, setAllBrowserData] = useState([]);
+
+  const [thisBrowser, setThisBrowser] = useState(browserInfo);
+
   const { sendMessage, loading } = useWS({
     onMessage: (message) => {
       console.log("received: ", { message });
@@ -24,6 +33,14 @@ export const App = () => {
 
       if (type === "all-browser-data") {
         setAllBrowserData(payload);
+
+        const myBrowser = payload.find(
+          (browser) => getBrowserId(browser) === getBrowserId(browserInfo)
+        );
+
+        if (myBrowser) {
+          setThisBrowser(myBrowser);
+        }
       }
     },
   });
@@ -89,7 +106,7 @@ export const App = () => {
               {closingTabMode ? "closing" : "refreshing"}
             </button>
             <h2>This browser is:</h2>
-            <SimpleTable data={[browserInfo]} />
+            <SimpleTable data={[thisBrowser]} />
             <h3>All browser data:</h3>
             <SimpleTable data={allBrowserData} />
           </div>
