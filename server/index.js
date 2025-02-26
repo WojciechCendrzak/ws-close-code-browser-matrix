@@ -5,7 +5,7 @@ const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 
 console.log("--------------------------------");
-console.log("Server version: 1.1");
+console.log("Server version: 1.2");
 console.log("--------------------------------");
 
 console.log("PORT", PORT);

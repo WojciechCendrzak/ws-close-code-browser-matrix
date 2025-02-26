@@ -4,7 +4,7 @@ import "./main.css";
 import { App } from "./App.jsx";
 
 console.log("--------------------------------");
-console.log("Client version: 1.1");
+console.log("Client version: 1.2");
 console.log("--------------------------------");
 
 createRoot(document.getElementById("root")).render(
