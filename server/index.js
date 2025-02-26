@@ -9,23 +9,65 @@ let clients = [];
 // When a new client connects
 wss.on("connection", (ws) => {
   console.log("Client connected");
-  clients.push(ws);
+  const client = { ws };
+  clients.push(client);
 
   // Broadcast messages to all other clients except the sender
   ws.on("message", (message) => {
-    console.log(`Received message: ${message}`);
-    clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(`${message}`);
-      }
-    });
+    const { type, payload } = JSON.parse(message);
+    console.log(`Received message`, { type, payload });
+
+    if (type === "browser-data") {
+      client.browserInfo = payload;
+      updateBrowser(payload);
+    }
+
+    if (type === "get-all-browser-data") {
+      const allBrowserData = Array.from(browsers.values());
+      ws.send(
+        JSON.stringify({ type: "all-browser-data", payload: allBrowserData })
+      );
+    }
   });
 
   // Remove the client from the list when it disconnects
-  ws.on("close", (event) => {
-    console.log("Client disconnected", { closeCode: event?.closeCode });
-    clients = clients.filter((client) => client !== ws);
+  ws.on("close", (closeCode) => {
+    console.log("Client disconnected", { closeCode });
+    clients = clients.filter((c) => client !== c);
+
+    if (client.browserInfo) {
+      const { closingTabMode } = client.browserInfo;
+      const closeCodeOnRefresh = closingTabMode ? undefined : closeCode;
+      const closeCodeOnClose = closingTabMode ? closeCode : undefined;
+      updateBrowser(client.browserInfo, closeCodeOnRefresh, closeCodeOnClose);
+    }
   });
 });
 
 console.log(`WebSocket server is running on ws://localhost:${PORT}`);
+
+const getBrowserId = (browserName, browserVersion, osName, osVersion) => {
+  return `${browserName}-${browserVersion}-${osName}-${osVersion}`;
+};
+
+const updateBrowser = (browserInfo, closeCodeOnRefresh, closeCodeOnClose) => {
+  const browserId = getBrowserId(
+    browserInfo.browserName,
+    browserInfo.browserVersion,
+    browserInfo.osName,
+    browserInfo.osVersion
+  );
+
+  const existingBrowser = browsers.get(browserId);
+
+  browsers.set(browserId, {
+    ...browserInfo,
+    closeCodeOnRefresh:
+      closeCodeOnRefresh || existingBrowser?.closeCodeOnRefresh,
+    closeCodeOnClose: closeCodeOnClose || existingBrowser?.closeCodeOnClose,
+  });
+
+  console.log("browser data", { browsers });
+};
+
+const browsers = new Map();

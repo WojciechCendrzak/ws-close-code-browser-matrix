@@ -1,33 +1,60 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useWS } from "./useWS";
 
+import Bowser from "bowser";
+
+const userAgent = Bowser.parse(window.navigator.userAgent);
+
+const browserInfo = {
+  browserName: userAgent.browser.name,
+  browserVersion: userAgent.browser.version,
+  osName: userAgent.os.name,
+  osVersion: userAgent.os.version,
+  platform: userAgent.platform.type,
+};
+
 export const App = () => {
-
-  const { sendMessage } = useWS({
+  const [closingTabMode, setClosingTabMode] = useState(false);
+  const [allBrowserData, setAllBrowserData] = useState([]);
+  const { sendMessage, loading } = useWS({
     onMessage: (message) => {
-      const data = JSON.parse(message);
+      console.log("received: ", { message });
 
-      if (data.type === "change-page") {
-        console.log("received: change-page", data.pageNumber);
-        setPageNumber(data.pageNumber);
+      const { type, payload } = JSON.parse(message);
+
+      if (type === "all-browser-data") {
+        setAllBrowserData(payload);
       }
     },
   });
 
   useEffect(() => {
-    sendMessage({
-      type: "browser-data",
-      payload: {
-        browser: 'test',
-        version: '1.0.0',
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        platform: navigator.platform,
-        online: navigator.onLine,
+    if (loading) return;
 
-      }
-    });
-  }, []);
+    sendMessage(
+      JSON.stringify({
+        type: "browser-data",
+        payload: {
+          browserName: userAgent.browser.name,
+          browserVersion: userAgent.browser.version,
+          osName: userAgent.os.name,
+          osVersion: userAgent.os.version,
+          platform: userAgent.platform.type,
+          closingTabMode,
+        },
+      })
+    );
+
+    sendMessage(
+      JSON.stringify({
+        type: "get-all-browser-data",
+      })
+    );
+  }, [sendMessage, loading, closingTabMode]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div
@@ -47,9 +74,7 @@ export const App = () => {
           margin: "16px",
         }}
       >
-
         <div
-          ref={ref}
           style={{
             display: "flex",
             flex: 1,
@@ -61,12 +86,51 @@ export const App = () => {
             overflow: "hidden",
           }}
         >
-
           <div>
             <h1>Hello</h1>
+            <button onClick={() => setClosingTabMode(!closingTabMode)}>
+              {closingTabMode ? "closing" : "refreshing"}
+            </button>
+            <h2>This browser is:</h2>
+            <SimpleTable data={[browserInfo]} />
+            <h3>All browser data:</h3>
+            <SimpleTable data={allBrowserData} />
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+const SimpleTable = ({ data }) => {
+  return (
+    <table border="1" style={{ borderCollapse: "collapse", width: "100%" }}>
+      <thead>
+        <tr>
+          <th>Browser Name</th>
+          <th>Browser Version</th>
+          <th>OS Name</th>
+          <th>OS Version</th>
+          <th>Platform</th>
+          <th>WS Close Code On Refresh</th>
+          <th>WS Close Code On Close</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((info, index) => (
+          <tr key={index}>
+            <td>{info.browserName}</td>
+            <td>{info.browserVersion}</td>
+            <td>{info.osName}</td>
+            <td>{info.osVersion}</td>
+            <td>{info.platform}</td>
+            <td>{info.closeCodeOnRefresh}</td>
+            <td>{info.closeCodeOnClose}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+export default SimpleTable;
