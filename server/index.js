@@ -1,5 +1,8 @@
 const WebSocket = require("ws");
-const PORT = 8080;
+require("dotenv").config();
+const PORT = process.env.PORT;
+
+console.log("PORT", PORT);
 
 const wss = new WebSocket.Server({ port: PORT });
 

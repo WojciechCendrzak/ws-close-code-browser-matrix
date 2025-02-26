@@ -52,10 +52,6 @@ export const App = () => {
     );
   }, [sendMessage, loading, closingTabMode]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div
       style={{
@@ -86,6 +82,7 @@ export const App = () => {
             overflow: "hidden",
           }}
         >
+          {loading && <h1>Loading...</h1>}
           <div>
             <h1>Hello</h1>
             <button onClick={() => setClosingTabMode(!closingTabMode)}>
