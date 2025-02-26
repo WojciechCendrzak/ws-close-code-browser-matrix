@@ -9,6 +9,7 @@ export const useWS = ({ onMessage }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    ws = new WebSocket(VITE_WS_SERVER_URL);
     const handleOpen = () => {
       setLoading(false);
       console.log("Connected to WebSocket server");
@@ -37,10 +38,10 @@ export const useWS = ({ onMessage }) => {
 
   const sendMessage = useCallback((message) => {
     console.log(`Sending message: ${message}`);
-    ws.send(message);
+    ws?.send(message);
   }, []);
 
   return { sendMessage, loading };
 };
 
-let ws = new WebSocket(VITE_WS_SERVER_URL);
+let ws;

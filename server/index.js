@@ -2,6 +2,10 @@ const WebSocket = require("ws");
 require("dotenv").config();
 const PORT = process.env.PORT;
 
+console.log("--------------------------------");
+console.log("Server version: 1.0");
+console.log("--------------------------------");
+
 console.log("PORT", PORT);
 
 const wss = new WebSocket.Server({ port: PORT });
